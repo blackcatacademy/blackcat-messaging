@@ -1,0 +1,22 @@
+{
+    "name": "blackcat/messaging",
+    "description": "Unified messaging, job queue, and scheduler engine for the BlackCat platform.",
+    "type": "library",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.2",
+        "psr/log": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "BlackCat\\Messaging\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "BlackCat\\Messaging\\Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
