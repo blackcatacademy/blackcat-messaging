@@ -1,0 +1,38 @@
+#!/usr/bin/env php
+<?php
+declare(strict_types=1);
+
+require __DIR__ . '/../vendor/autoload.php';
+
+use BlackCat\Core\Database;
+use BlackCat\Database\Packages\WebhookOutbox\Repository\WebhookOutboxRepository;
+use BlackCat\Messaging\Config\WebhookOutboxWorkerConfig;
+use BlackCat\Messaging\Worker\WebhookOutboxWorker;
+use Psr\Log\NullLogger;
+
+$env = $_ENV + $_SERVER;
+
+$dsn = (string)($env['BLACKCAT_DB_DSN'] ?? ($env['BLACKCAT_AUTH_DB_DSN'] ?? ''));
+if ($dsn === '') {
+    fwrite(STDERR, "Missing BLACKCAT_DB_DSN\n");
+    exit(2);
+}
+
+Database::init([
+    'dsn' => $dsn,
+    'user' => $env['BLACKCAT_DB_USER'] ?? ($env['BLACKCAT_AUTH_DB_USER'] ?? null),
+    'pass' => $env['BLACKCAT_DB_PASS'] ?? ($env['BLACKCAT_AUTH_DB_PASS'] ?? null),
+    'appName' => $env['BLACKCAT_DB_APPNAME'] ?? 'blackcat-webhook-outbox-worker',
+]);
+
+$db = Database::getInstance();
+
+$logger = new NullLogger();
+$repo = new WebhookOutboxRepository($db);
+$config = WebhookOutboxWorkerConfig::fromEnv($env);
+
+$worker = new WebhookOutboxWorker($db, $repo, $config, null, $logger);
+$report = $worker->runOnce();
+
+fwrite(STDOUT, json_encode($report, JSON_UNESCAPED_SLASHES) . "\n");
+

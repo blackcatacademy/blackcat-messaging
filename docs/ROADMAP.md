@@ -9,7 +9,9 @@
 ## Stage 2 – Reliable Delivery & CDC Integration
 - At-least-once + idempotence helpers, deduplikace, DLQ storage (Postgres + Redis varianty).
 - Outbox bridge pro `blackcat-database` (`EnqueueOnCommit` trait) a `blackcat-database-sync`.
+- ✅ DB-backed outbox workery: `event_outbox` → messaging transport + `webhook_outbox` → HTTP dispatch (single source of truth: `blackcat-database/views-library`).
 - Scheduler modul s leader election (Postgres advisory locks), catch-up, jitter injection, CLI `schedule:list`.
+- TODO Přesunout `PostgresTransport` schema do `blackcat-database` package (bez raw PDO; použít `BlackCat\\Core\\Database` + generated repo).
 
 ## Stage 3 – Multi-Protocol Bus
 - Kafka/NATS/Redis Streams/AMQP adaptér se sjednocenými capabilities (batch ack, consumer groups).

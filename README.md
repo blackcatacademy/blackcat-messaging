@@ -59,6 +59,46 @@ php bin/messaging tail
 ```
 ```
 
+## DB-backed outbox workers (event_outbox + webhook_outbox)
+
+Tyto workery používají `blackcat-database` balíčky a views z `views-library` (single source of truth):
+- `vw_event_outbox_due` (pro `event_outbox`)
+- `vw_webhook_outbox_due` (pro `webhook_outbox`)
+
+### Event outbox → messaging transport
+
+Publikuje řádky z `event_outbox` do zvoleného transportu (`BLACKCAT_MESSAGING_*` config):
+
+```bash
+export BLACKCAT_DB_DSN="pgsql:host=localhost;port=5432;dbname=blackcat"
+export BLACKCAT_DB_USER="postgres"
+export BLACKCAT_DB_PASS="secret"
+
+# volitelné:
+export BLACKCAT_EVENT_OUTBOX_ENTITY_TABLE="outbox"
+export BLACKCAT_EVENT_OUTBOX_BATCH_SIZE=100
+export BLACKCAT_EVENT_OUTBOX_LOCK_SECONDS=300
+
+php bin/event-outbox-worker
+```
+
+### Webhook outbox → HTTP dispatch
+
+Defaultně očekává, že `webhook_outbox.payload` obsahuje `url` (případně `webhook_url`/`endpoint`), a odešle JSON payload přes HTTP.
+Vyžaduje `ext-curl`.
+
+```bash
+export BLACKCAT_DB_DSN="pgsql:host=localhost;port=5432;dbname=blackcat"
+export BLACKCAT_DB_USER="postgres"
+export BLACKCAT_DB_PASS="secret"
+
+export BLACKCAT_WEBHOOK_OUTBOX_BATCH_SIZE=100
+export BLACKCAT_WEBHOOK_OUTBOX_LOCK_SECONDS=300
+export BLACKCAT_WEBHOOK_OUTBOX_HTTP_TIMEOUT_SECONDS=5
+
+php bin/webhook-outbox-worker
+```
+
 V applikačním kódu:
 
 ```php
